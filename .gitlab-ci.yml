@@ -1,0 +1,20 @@
+stages:
+  - build
+  - test
+  - deploy
+
+
+build-job:
+  stage: build
+  script:
+    - echo "Building the 'Hello World' app"
+
+test-job:
+  stage: test
+  script:
+    - echo "Testing the 'Hello World' app"
+
+deploy-job:
+  stage: deploy
+  script:
+    - echo "Deploying the 'Hello World' app"
