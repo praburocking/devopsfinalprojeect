@@ -1,20 +1,20 @@
 stages:
   - build
   - test
-  - deploy
-
 
 build-job:
   stage: build
   script:
-    - echo "Building the 'Hello World' app"
+    - echo "Compiling the code..."
+    - echo "Compile complete."
+  artifacts:
+    paths:
+    - target   
 
 test-job:
   stage: test
+  dependencies: 
+    - build-job  
   script:
-    - echo "Testing the 'Hello World' app"
-
-deploy-job:
-  stage: deploy
-  script:
-    - echo "Deploying the 'Hello World' app"
+    - ls -al
+    - echo "Running tests"
