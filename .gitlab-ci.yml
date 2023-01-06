@@ -4,15 +4,16 @@ stages:
 
 build-job:
   stage: build
+  tags: 
+    - devops_pipeline
   script:
     - echo "Compiling the code..."
-    - echo "Compile complete."
-  artifacts:
-    paths:
-    - target   
+    - echo "Compile complete." 
 
 test-job:
   stage: test
+  tags: 
+    - devops_pipeline
   dependencies: 
     - build-job  
   script:
