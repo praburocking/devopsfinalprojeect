@@ -4,6 +4,7 @@ stages:
   - deploy
 
 before_script:
+  - echo "$SSH_PRIVATE_KEY"
   - apt-get update -qq
   - apt-get install -qq git
   # Setup SSH deploy keys
