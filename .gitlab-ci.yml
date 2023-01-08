@@ -1,19 +1,11 @@
+image: alpine:latest
+
 stages:
   - build
   - test
   - deploy
 
-before_script:
-  - echo "$SSH_PRIVATE_KEY"
-  - apt-get update -qq
-  - apt-get install -qq git
-  # Setup SSH deploy keys
-  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
-  - eval $(ssh-agent -s)
-  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-  - mkdir -p ~/.ssh
-  - chmod 700 ~/.ssh
-  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+
 
 build-job:
   stage: build
@@ -32,6 +24,17 @@ test-job:
 
 deploy_staging:
   stage: deploy
+  before_script:
+  - echo "$SSH_PRIVATE_KEY"
+  - apt-get update -qq
+  - apt-get install -qq git
+  # Setup SSH deploy keys
+  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   script:
     - echo "ssh deploy started"
     - ssh prabu@localhost "cd var/www/ && git checkout project && git pull origin project && exit"
