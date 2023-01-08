@@ -1,6 +1,17 @@
 stages:
   - build
   - test
+  - deploy
+
+before_script:
+  - apt-get update -qq
+  - apt-get install -qq git
+  # Setup SSH deploy keys
+  - 'which ssh-agent || ( apt-get install -qq openssh-client )'
+  - eval $(ssh-agent -s)
+  - ssh-add <(echo "$SSH_PRIVATE_KEY")
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
 
 build-job:
   stage: build
@@ -15,3 +26,14 @@ test-job:
   script:
     - ls -al
     - echo "Running tests"
+
+
+deploy_staging:
+  stage: deploy
+  script:
+    - echo "ssh deploy started"
+    - ssh prabu@localhost "cd var/www/ && git checkout project && git pull origin project && exit"
+    - echo "ssh deploy completed"
+  only:
+    - project
+
