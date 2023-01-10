@@ -15,11 +15,16 @@ build-job:
 
 test-job:
   stage: test
+  image: python:latest
+  before_script:
+    - pip install pytest
   dependencies: 
     - build-job  
   script:
-    - ls -al
     - echo "Running tests"
+    - pytest tests/
+    - echo "test completed"
+    
 
 
 deploy_staging:
