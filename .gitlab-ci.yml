@@ -84,15 +84,11 @@ deploy_staging:
     ## Optionally, if you will be using any Git commands, set the user name and
     ## email.
     ##
-    #- git config --global user.email "darth@empire.com"
-    - git config --global user.name "prabu"
-    - git config --global user.password "$GIT_PASSWORD"
 
   script:
     - echo "ssh deploy started"
     # - ssh prabu@localhost "cd var/www/ && git checkout project && git pull origin project && exit"
-    - git clone http://prabu@gitlab-ce/gitlab-instance-492260da/finalproject.git
-    - git checkout -B project
+    - git clone http://prabu:glpat-L23Zfs9ed1cvDUsG5iQX@gitlab-ce/gitlab-instance-492260da/finalproject.git -b project
     - echo "ssh deploy completed"
   only:
     - project
