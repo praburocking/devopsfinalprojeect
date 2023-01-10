@@ -28,7 +28,7 @@ test-job:
 
 
 deploy_staging:
-  image: ubuntu:lastest
+  image: ubuntu:latest
   stage: deploy
   before_script:
     ##
