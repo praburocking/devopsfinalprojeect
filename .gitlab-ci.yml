@@ -91,7 +91,7 @@ deploy_staging:
   script:
     - echo "ssh deploy started"
     # - ssh prabu@localhost "cd var/www/ && git checkout project && git pull origin project && exit"
-    - git clone http://gitlab-ce/gitlab-instance-492260da/finalproject.git
+    - git clone http://prabu@gitlab-ce/gitlab-instance-492260da/finalproject.git
     - git checkout -B project
     - echo "ssh deploy completed"
   only:
