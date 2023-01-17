@@ -79,7 +79,7 @@ deploy_staging:
     - echo "ssh deploy started"
     # - ssh prabu@localhost "cd var/www/ && git checkout project && git pull origin project && exit"
     #- git clone http://prabu:glpat-L23Zfs9ed1cvDUsG5iQX@gitlab-ce/gitlab-instance-492260da/finalproject.git -b project
-    - ssh prabu@192.168.1.2 "cd /home/prabu/Documents/devops-project/temp_project/new_temp && git checkout project && git pull origin project && exit"
+    - ssh prabu@deployment "cd /home/prabu/Documents/devops-project/temp_project/new_temp && git checkout project && git pull origin project && exit"
     - echo "ssh deploy completed"
   only:
     - project
