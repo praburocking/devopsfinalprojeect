@@ -1,8 +1,14 @@
 import pika
 import time
+from HTMLLogger import HTMLLogger
+from datetime import datetime
+now = datetime.now()
+LOG_DIR="/usr/logs"
+LOG_PREFIX=now.strftime("%d_%m_%Y_%H_%M_%S")
+log_file=LOG_DIR+"/"+LOG_PREFIX+"_orig_logs.html"
+logger=HTMLLogger(name="ORIG", html_filename=log_file, console_log=True)
 
-
-HOST="exe3-rabitmq-1"
+HOST="rabitmq"
 #HOST="localhost"
 ROUTING_KEY1="compse140.o"
 EXCHANGE='topic_msg'
@@ -12,6 +18,8 @@ ROUTING_KEY2="compse140.i"
 def is_port_in_use(port: int) -> bool:
     import socket
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        print('socket host address <h1>'+HOST+'</h1> :: port address <h1>'+str(port)+'</h1>')
+        logger.info('socket host address <hl>'+HOST+' </hl> :: port address <hl>'+str(port)+'</hl>')
         return s.connect_ex((HOST, port)) == 0
 
 # sleep util the rabit mq is active to accept the client.

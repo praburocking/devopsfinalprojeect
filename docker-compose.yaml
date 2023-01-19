@@ -13,6 +13,7 @@ services:
       backend:
     volumes:
       - web_data:/usr/data:ro
+      - ./logs:/usr/logs
     depends_on:
       - rabitmq
   
@@ -24,16 +25,20 @@ services:
     networks:
       backend:
     tty: true
+    volumes:
+      - ./logs:/usr/logs
 
 
   orig:
     build: orig/.
+    container_name: orig
     tty: true
-   
     networks:
       backend:
     depends_on:
       - rabitmq
+    volumes:
+      - ./logs:/usr/logs
 
   observ:
     build: observ/.
@@ -42,6 +47,7 @@ services:
       backend:
     volumes:
       - web_data:/usr/data
+      - ./logs:/usr/logs
     depends_on:
       - rabitmq
     container_name: observ
@@ -49,32 +55,11 @@ services:
   rabitmq:
     image: rabbitmq:3.10-management
     container_name: rabitmq
-    
     networks:
       backend:
-  
-
 
 networks:
-      backend:
+ backend:
+    name: backend-network
 volumes:
   web_data:
-   
-
-  #sudo docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.10-management
-  #https://dev.to/usamaashraf/microservices--rabbitmq-on-docker-e2f
-  #https://www.tutorialworks.com/container-networking/
- #https://fabianlee.org/2020/09/12/python-publishing-and-consuming-from-rabbitmq-using-python/
- #Patch(userData,LookUp( userData, userData = questions_form.LastSubmit.userData ),{all_users:LookUp(app_users_1,email=cur_email)})
-#&&
-
-#  Patch(userData,LookUp(userData,questions_form.LastSubmit.userData),{all_users:LookUp(app_users_1,email=cur_email).app_user})
-# &&
-
-
-# If(!IsBlank(questions_form),
-
-# SubmitForm(questions_form);
-# Patch(userData,LookUp(userData,rowcounter=questions_form.LastSubmit.rowcounter),{all_users:LookUp(app_users_1,email=cur_email)});
-
-# Navigate(thankYou) && testpowerapps.Run(questions_form.LastSubmit.userData),Notify("You missed some required input"),NotificationType.Error);

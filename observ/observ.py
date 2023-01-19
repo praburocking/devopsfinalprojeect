@@ -4,9 +4,16 @@ import sys
 from datetime import datetime
 import time
 import functools
+from HTMLLogger import HTMLLogger
+from datetime import datetime
+now = datetime.now()
+LOG_DIR="/usr/logs"
+LOG_PREFIX=now.strftime("%d_%m_%Y_%H_%M_%S")
+log_file=LOG_DIR+"/"+LOG_PREFIX+"_observ_logs.html"
+logger=HTMLLogger(name="OBSERV", html_filename=log_file, console_log=True)
 
 
-HOST="exe3-rabitmq-1"
+HOST="rabitmq"
 ROUTING_KEY1="compse140.o"
 ROUTING_KEY2="compse140.i"
 EXCHANGE='topic_msg'
@@ -19,6 +26,7 @@ temp_counter={'counter':0}
 def is_port_in_use(port: int) -> bool:
     import socket
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        logger.info('socket host address <hl>'+HOST+' </hl> :: port address <hl>'+str(port)+'</hl>')
         return s.connect_ex((HOST, port)) == 0
 
 # sleep util the rabit mq is active to accept the client.
