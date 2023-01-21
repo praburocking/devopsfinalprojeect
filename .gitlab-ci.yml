@@ -11,7 +11,7 @@ flake-job:
   stage: static_analysis
   allow_failure: true
   before_script:
-    - sudo apt install flake8
+    - apt-get install flake8
   only:
     - project
   script:
@@ -23,7 +23,7 @@ pylint:
     - project
   allow_failure: true
   before_script:
-  - sudo apt install pylint
+  - apt-get install pylint
   script:
     - pylint --fail-under=8 project
 
@@ -37,7 +37,8 @@ test-job:
 
   script:
     - echo "Running tests"
-    - pytest tests/
+    - cd tests/
+    - pytest .
     - echo "test completed"
     
 
