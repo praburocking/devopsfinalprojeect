@@ -5,4 +5,5 @@ RUN mkdir /usr/logs
 COPY . .
 RUN pip install pika
 RUN pip install PyLog2html
+RUN pip install python-dotenv
 CMD ["python3", "observ.py"]

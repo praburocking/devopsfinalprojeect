@@ -1,23 +1,39 @@
 image: python:latest
 
 stages:
-  - build
+  - static_analysis
   - test
   - deploy
 
 
 
-build-job:
-  stage: build
+flake-job:
+  stage: static_analysis
+  allow_failure: true
+  before_script:
+    - sudo apt install flake8
+  only:
+    - project
   script:
-    - echo "Compiling the code..."
-    - echo "Compile complete." 
+    - flake8 --ignore=E501 .
+
+pylint:
+  stage: Static Analysis
+  only:
+    - project
+  allow_failure: true
+  before_script:
+  - sudo apt install pylint
+  script:
+    - pylint --fail-under=8 project
 
 test-job:
   stage: test
   image: python:latest
   before_script:
     - pip install pytest
+    - pip install pytest-mock
+    - export ENV=PROD
   dependencies: 
     - build-job  
   script:
@@ -31,57 +47,22 @@ deploy_staging:
   image: ubuntu:latest
   stage: deploy
   before_script:
-    ##
-    ## Install ssh-agent if not already installed, it is required by Docker.
-    ## (change apt-get to yum if you use an RPM-based image)
-    ##
-    #- 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
-
-    ##
-    ## Run ssh-agent (inside the build environment)
-    ##
-    #- eval $(ssh-agent -s)
-
-    ##
-    ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
-    ## We're using tr to fix line endings which makes ed25519 keys work
-    ## without extra base64 encoding.
-    ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
-    ##
-
-    #- echo "${SSH_PRIVATE_KEY}" | tr -d '\r' | ssh-add -
-
-    ##
-    ## Create the SSH directory and give it the right permissions
-    ##
-    #- mkdir -p ~/.ssh
-    #- chmod 700 ~/.ssh
-
-    ##
-    ## Use ssh-keyscan to scan the keys of your private server. Replace gitlab.com
-    ## with your own domain name. You can copy and repeat that command if you have
-    ## more than one server to connect to.
-    ##
-    #- ssh-keyscan gitlab-ce >> ~/.ssh/known_hosts
-    #- chmod 644 ~/.ssh/known_hosts
-
+    #installing the required packages
     - apt-get update -qq
     - apt-get install -qq git
+    - apt-get install sshpass
     # Setup SSH deploy keys
     - 'which ssh-agent || ( apt-get install -qq openssh-client )'
     - eval $(ssh-agent -s)
     - ssh-add <(echo "$SSH_PRIVATE_KEY")
     - mkdir -p ~/.ssh
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-    - apt-get install sshpass
-
+    
 
   script:
     - echo "ssh deploy started"
-    # - ssh prabu@localhost "cd var/www/ && git checkout project && git pull origin project && exit"
-    #- git clone http://prabu:glpat-L23Zfs9ed1cvDUsG5iQX@gitlab-ce/gitlab-instance-492260da/finalproject.git -b project
-    - sshpass -p root ssh root@deployment "rm -rf app && mkdir app && cd app && git clone http://prabu:glpat-L23Zfs9ed1cvDUsG5iQX@gitlab-ce/gitlab-instance-492260da/finalproject.git -b project && cd finalproject && docker-compose up --build -d && exit"
-    #- ssh prabu@deployment "cd /home/prabu/Documents/devops-project/temp_project/new_temp && git checkout project && git pull origin project && exit"
+    # ssh into the deployment using password, set the environment variable to PROD, create a new folder clone the repository using the access token and start the docker containers. 
+    - sshpass -p root ssh root@deployment "rm -rf app && export ENV=PROD &&mkdir app && cd app && git clone http://prabu:glpat-L23Zfs9ed1cvDUsG5iQX@gitlab-ce/gitlab-instance-492260da/finalproject.git -b project && cd finalproject && docker-compose up --build -d && exit"
     - echo "ssh deploy completed"
   only:
     - project

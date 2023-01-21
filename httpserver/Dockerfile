@@ -4,7 +4,9 @@ RUN mkdir /usr/data
 RUN mkdir /usr/logs
 COPY . .
 RUN pip install fastapi
+RUN pip install pika
 RUN pip install PyLog2html
+RUN pip install python-dotenv
 RUN pip install "uvicorn[standard]"
 EXPOSE 8080
 CMD ["python3" ,"httpserver.py"]
