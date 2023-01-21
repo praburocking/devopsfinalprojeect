@@ -22,11 +22,14 @@ flake-job:
 
 pylint:
   stage: static_analysis
+  image: ubuntu:latest
   only:
     - project
   allow_failure: true
   before_script:
-  - apt-get install pylint
+    - apt-get update -qq
+    - apt-get install -qq python3
+    - apt-get install -qq pylint
   script:
     - pylint --fail-under=8 project
 
@@ -34,6 +37,8 @@ test-job:
   stage: test
   image: python:latest
   before_script:
+    - python -m venv venv
+    - source venv/bin/activate
     - pip install pytest
     - pip install pytest-mock
     - pip install fastapi
