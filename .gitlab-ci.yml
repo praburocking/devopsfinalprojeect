@@ -13,8 +13,8 @@ flake-job:
   allow_failure: true
   before_script:
     - apt-get update -qq
-    - apt-get install flake8
-    - apt-get install python3
+    - apt-get install -qq flake8
+    - apt-get install -qq python3
   only:
     - project
   script:
