@@ -34,8 +34,7 @@ test-job:
     - pip install pytest
     - pip install pytest-mock
     - export ENV=PROD
-  dependencies: 
-    - build-job  
+
   script:
     - echo "Running tests"
     - pytest tests/
