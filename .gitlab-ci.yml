@@ -18,7 +18,7 @@ flake-job:
     - flake8 --ignore=E501 .
 
 pylint:
-  stage: Static Analysis
+  stage: static_analysis
   only:
     - project
   allow_failure: true
