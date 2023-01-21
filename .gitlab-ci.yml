@@ -10,8 +10,8 @@ stages:
 flake-job:
   stage: static_analysis
   allow_failure: true
-  before_script:
-    - apt-get install flake8
+  # before_script:
+  #   - apt-get install flake8
   only:
     - project
   script:
