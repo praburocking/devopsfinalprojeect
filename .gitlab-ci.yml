@@ -9,9 +9,11 @@ stages:
 
 flake-job:
   stage: static_analysis
+  image: ubuntu:latest
   allow_failure: true
-  # before_script:
-  #   - apt-get install flake8
+  before_script:
+    - apt-get install flake8
+    - apt-get install python3
   only:
     - project
   script:
@@ -34,6 +36,11 @@ test-job:
     - pip install pytest
     - pip install pytest-mock
     - export ENV=PROD
+    - pip install fastapi
+    - pip install pika
+    - pip install PyLog2html
+    - pip install python-dotenv
+    - pip install "uvicorn[standard]"
 
   script:
     - echo "Running tests"
