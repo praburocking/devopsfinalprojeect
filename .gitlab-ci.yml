@@ -12,6 +12,7 @@ flake-job:
   image: ubuntu:latest
   allow_failure: true
   before_script:
+    - apt-get update -qq
     - apt-get install flake8
     - apt-get install python3
   only:
@@ -35,12 +36,12 @@ test-job:
   before_script:
     - pip install pytest
     - pip install pytest-mock
-    - export ENV=PROD
     - pip install fastapi
     - pip install pika
     - pip install PyLog2html
     - pip install python-dotenv
     - pip install "uvicorn[standard]"
+    - export ENV=TEST
 
   script:
     - echo "Running tests"
