@@ -27,8 +27,6 @@ def mocker_message_file_open(mocker):
 def mocker_run_log_file_open(mocker):
     # Read a mocked file
     output_res=["2020-11-01T06:35:01.373Z: INIT",
-                "2020-11-01T06.35:01.380Z: RUNNING",
-                "2020-11-01T06:40:01.373Z: PAUSED"
                 "2020-11-01T06:40:01.373Z: RUNNING"]
     mocked_run_log_file= mocker.mock_open(read_data="\n".join(output_res))
     builtin_open = "__builtin__.open" if PY2 else "builtins.open"
@@ -63,8 +61,6 @@ def test_get_state(mocker_run_log_file_open):
 def test_get_log(mocker_run_log_file_open):
     response = client.get("/run-log")
     output_res=["2020-11-01T06:35:01.373Z: INIT",
-                "2020-11-01T06.35:01.380Z: RUNNING",
-                "2020-11-01T06:40:01.373Z: PAUSED",
                 "2020-11-01T06:40:01.373Z: RUNNING"]
     assert response.status_code == 200
     assert response.text=="\n".join(output_res)

@@ -61,7 +61,7 @@ def callback(ch, method, properties, body,temp_counter):
     temp_file= open(FILE_PATH, "a",encoding='utf-8')	
     dt = datetime.now()
     temp_counter['counter']=temp_counter['counter']+1	
-    temp_str=str(dt)+" "+str(temp_counter['counter'])+" "+str(body)+" "+method.routing_key+"\n"
+    temp_str=str(dt)+" "+str(temp_counter['counter'])+" "+body.decode("utf-8")+" to "+method.routing_key+"\n"
     temp_file.write(temp_str)
     print("********"+temp_str)    
     temp_file.close()

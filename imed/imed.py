@@ -45,7 +45,7 @@ def main():
                         routing_key=ROUTING_KEY2,
                         body=body)
         time.sleep(1)
-        print("******** [x] Received %r" % body)
+        logger.info("******** [x] Received %r" % body)
 
     channel.basic_consume(queue=ROUTING_KEY1, on_message_callback=callback, auto_ack=True)
 

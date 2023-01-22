@@ -8,14 +8,17 @@ services:
     ports:
       - "8083:8083"
     tty: true
+    env_file:
+      - .env
     
     networks:
       backend:
     volumes:
-      - web_data:/usr/data:ro
+      - web_data:/usr/data
       - ./logs:/usr/logs
     depends_on:
       - rabitmq
+    
   
   imed:
     build: imed/.
@@ -27,6 +30,8 @@ services:
     tty: true
     volumes:
       - ./logs:/usr/logs
+    env_file:
+      - .env
 
 
   orig:
@@ -39,6 +44,8 @@ services:
       - rabitmq
     volumes:
       - ./logs:/usr/logs
+    env_file:
+      - .env
 
   observ:
     build: observ/.
@@ -51,6 +58,8 @@ services:
     depends_on:
       - rabitmq
     container_name: observ
+    env_file:
+      - .env
     
   rabitmq:
     image: rabbitmq:3.10-management
