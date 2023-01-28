@@ -1,5 +1,7 @@
 image: python:latest
-
+services:
+  - name: rabbitmq:3.10-management
+    alias: rabitmq
 stages:
   - static_analysis
   - test

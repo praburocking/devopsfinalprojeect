@@ -1,8 +1,9 @@
 import sys
+sys.path.insert(0, '../httpserver')
 from httpserver import app
 from fastapi.testclient import TestClient
 import pytest
-sys.path.insert(0, '../httpserver')
+
 
 
 
