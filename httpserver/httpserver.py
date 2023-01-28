@@ -11,7 +11,6 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 import sys
-import psutil
 
 #loading environment
 load_dotenv()
@@ -55,8 +54,6 @@ while True and APP_ENV=="PROD":
 		print("httpserver started ........")
 		break
 
-#run the lines only in production. The lines are simulated in the TEST env for unit test
-
 connection = pika.BlockingConnection(pika.ConnectionParameters(HOST))
 channel = connection.channel()
 
@@ -65,14 +62,14 @@ channel.exchange_declare(exchange=EXCHANGE, exchange_type='topic')
 channel.queue_declare(queue=CONTROL__SIGNAL_OBSERV_QUEUE)
 channel.queue_declare(queue=CONTROL__SIGNAL_ORIG_QUEUE)
 channel.queue_declare(queue=CONTROL__SIGNAL_IMED_QUEUE)
+
+#create quques for sending control signals.
 channel.queue_bind(exchange=EXCHANGE, queue=CONTROL__SIGNAL_OBSERV_QUEUE, routing_key=CONTROL__SIGNAL_ROUTING_KEY)
 channel.queue_bind(exchange=EXCHANGE, queue=CONTROL__SIGNAL_ORIG_QUEUE, routing_key=CONTROL__SIGNAL_ROUTING_KEY)
 channel.queue_bind(exchange=EXCHANGE, queue=CONTROL__SIGNAL_IMED_QUEUE, routing_key=CONTROL__SIGNAL_ROUTING_KEY)
 logger.info("creating cotrol queue and topic with name "+CONTROL__SIGNAL_ROUTING_KEY)
 
-	#clear the file before starting the server
-
-
+#state is updated to INIT
 def init_service():
 	logger.info("INIT service is triggered ")
 	with open(RUN_LOG_FILE_PATH, 'w') as fp:
@@ -84,14 +81,15 @@ def init_service():
                         routing_key=CONTROL__SIGNAL_ROUTING_KEY,
                         body="INIT")
 	
-
+#state is updated to PAUSED
 def pause_service():
 	logger.info("PAUSE service is triggered ")
 	persist_service_change("PAUSED")
 	channel.basic_publish(exchange=EXCHANGE,
                         routing_key=CONTROL__SIGNAL_ROUTING_KEY,
                         body="PAUSED")
-
+ 
+#state is updated to RUNNING
 def run_service():
 	logger.info("RUN service is triggered ")
 	persist_service_change("RUNNING")
@@ -99,24 +97,21 @@ def run_service():
                         routing_key=CONTROL__SIGNAL_ROUTING_KEY,
                         body="RUNNING")
 	
-	
-
+#state is updated to SHUTDOWN
 async def shutdown_service():
 	logger.info("SHUTDOWN service is triggered ")
 	persist_service_change("SHUTDOWN")
 	channel.basic_publish(exchange=EXCHANGE,
                         routing_key=CONTROL__SIGNAL_ROUTING_KEY,
                         body="SHUTDOWN")
-	parent_pid = os.getpid()
-	parent = psutil.Process(parent_pid)
-	for child in parent.children(recursive=True):  # or parent.children() for recursive=False
-		child.kill()
-	parent.kill()
+	#shutdown the server
 	global server
 	server.should_exit = True
 	server.force_exit = True
 	await server.shutdown()
-
+ 
+ 
+#persist the state changes. the file will be reset when INIT state is called 
 def persist_service_change(state):
 	#update the changes in the run_log_file.txt before 
 	temp_file= open(RUN_LOG_FILE_PATH, "a",encoding='utf-8')
@@ -134,6 +129,7 @@ app = FastAPI()
 init_service()
 run_service()
 
+# GET /message endpoint
 @app.get("/message", response_class=PlainTextResponse)
 def read_message():
 	logger.info("expected file path "+FILE_PATH)
@@ -141,6 +137,7 @@ def read_message():
 	f = open(FILE_PATH, "r")
 	return str(f.read())
 
+# PUT /state endpoint
 @app.put("/state", response_class=PlainTextResponse)
 async def update_state(request: Request):
 	state=await request.body()
@@ -148,7 +145,6 @@ async def update_state(request: Request):
 	logger.info("PUT request received for <hl>/state</hl> and the input state :"+str(state))
 	if not state in ALLOWED_STATES:
 		return PlainTextResponse(content="Invalid state. Allowed state "+str(ALLOWED_STATES),status_code=400)
-		#raise HTTPException(400, "Invalid state. Allowed state "+str(ALLOWED_STATES))
 
 	#check the last status and if it is same as current one don't do anything	
 	f= open(RUN_LOG_FILE_PATH, 'r')
@@ -167,6 +163,7 @@ async def update_state(request: Request):
 		await shutdown_service()
 	return "state updated"
 
+#GET /state endpoint
 @app.get("/state", response_class=PlainTextResponse)
 def get_state():
 	logger.info("GET request received for <hl>/state</hl>")
@@ -174,12 +171,12 @@ def get_state():
 	last_line = f.readlines()[-1]
 	return str(last_line.split(":")[-1]).strip()
 
+#GET /run-log endpoint
 @app.get("/run-log", response_class=PlainTextResponse)
 def get_run_log():
 	logger.info("GET request received for <hl>/run-log</hl>")
 	f = open(RUN_LOG_FILE_PATH, "r")
 	return str(f.read())
-
 
 
 server=None

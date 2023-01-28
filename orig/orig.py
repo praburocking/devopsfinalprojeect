@@ -22,9 +22,6 @@ CONTROL__SIGNAL_IMED_QUEUE="state_control.imed"
 CONTROL__SIGNAL_OBSERV_QUEUE="state_control.observ"
 RUN_LOG_FILE_PATH="/usr/data/run_log_file.txt"
 
-
-
-
 def is_port_in_use(port: int) -> bool:
     import socket
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -65,10 +62,11 @@ def read_control_file():
     last_line = f.readlines()[-1]
     return str(last_line.split(":")[-1]).strip()
 
+# Callback function for receving the control signals. i.e State changes.
 def control_callback(ch, method, properties, body):
     logger.info("control signal received "+body.decode('utf-8'))
-    #if control signal is received as RUNNING then start  publishing the message.
     
+    #if control signal is received as RUNNING then start  publishing the message.
     if body.decode('utf-8')=="RUNNING":
         for i in range(N):
             #reading the last updated states from RUN_LOG_FILE and if it is PAUESED then the publishing loop will be breaked.
@@ -83,16 +81,15 @@ def control_callback(ch, method, properties, body):
             print(" [x] Sent 'Hello World!---'")
             time.sleep(3)
         logger.info("message published %r" % body)
+    
+    #if control signal receives SHUTDOWN state, it will close the connection and exit the python, thereby closing the docker container    
     elif body.decode('utf-8')=="SHUTDOWN":
          channel.close()
          sys.exit()
 
+#consuming the control signal sent from httpserver
 channel.basic_consume(queue=CONTROL__SIGNAL_ORIG_QUEUE, on_message_callback=control_callback, auto_ack=True)
 
 print(' [*] Waiting for messages. To exit press CTRL+C')
 channel.start_consuming()
-
-
-
-#connection.close()
 

@@ -26,6 +26,7 @@ def mocker_run_log_file_open(mocker):
 
 client = TestClient(app)
 
+#to test the /message endpoint
 def test_read_message(mocker):
     output_res=["2023-01-22 00:18:50.567344 1 MSG_1 to compse140.o",
                 "2023-01-22 00:18:50.567431 2 MSG_1 to compse140.i",
@@ -41,28 +42,32 @@ def test_read_message(mocker):
     assert response.text=="\n".join(output_res)
 
 
-
+# to test the simple PUT /state endpoint
 def test_simple_update_state():
     response = client.put("/state",data=b"PAUSED")
     assert response.status_code == 200
     assert response.text=="state updated"
-    
+
+# to test the PUT /state endpoint when previous state is same as current one
 def test_update_same_state():
     response = client.put("/state",data=b"PAUSED")
     response = client.put("/state",data=b"PAUSED")
     assert response.status_code == 200
     assert response.text=="state not updated"
 
+# to test the PUT /state endpoint with undefined state
 def test_update_undefined_state():
     response = client.put("/state",data=b"random_text")
     assert response.status_code == 400
     assert response.text=="Invalid state. Allowed state ['INIT', 'PAUSED', 'RUNNING', 'SHUTDOWN']"
 
+# to test the GET /state endpoint 
 def test_get_state(mocker_run_log_file_open):
     response = client.get("/state")
     assert response.status_code == 200
     assert response.text == "RUNNING"
 
+# to test the GET /run-log endpoint 
 def test_get_log(mocker_run_log_file_open):
     response = client.get("/run-log")
     output_res=["2020-11-01T06:35:01.373Z: INIT",

@@ -68,17 +68,6 @@ services:
     container_name: rabitmq
     networks:
       backend:
-  # logs:
-  #   image: httpd
-  #   container_name: logs
-  #   volumes:
-  #     - ./logs:.
-  #   expose:
-  #     - "80"
-  #   ports:
-  #     - "8088:80"
-  #   networks:
-  #     backend:
 
 networks:
  backend:

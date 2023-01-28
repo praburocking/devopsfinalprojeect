@@ -29,7 +29,6 @@ CONTROL__SIGNAL_OBSERV_QUEUE="state_control.observ"
 # using 'dict' instead of simple 'int', as 'dict' will be defaultly passed as call by value to the function 
 temp_counter={'counter':0}
 
-
 def is_port_in_use(port: int) -> bool:
     import socket
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -46,12 +45,6 @@ while True:
 		break
 time.sleep(5)
 
-# connection = pika.BlockingConnection(
-#     pika.ConnectionParameters(host=HOST))
-# channel = connection.channel()
-
-
-
 connection = pika.BlockingConnection(pika.ConnectionParameters(host=HOST))
 channel = connection.channel()
 channel.exchange_declare(exchange=EXCHANGE, exchange_type='topic')
@@ -62,7 +55,7 @@ channel.queue_bind(exchange=EXCHANGE, queue=ROUTING_KEY2, routing_key=ROUTING_KE
 channel.exchange_declare(exchange=EXCHANGE, exchange_type='topic')
 channel.queue_declare('#')
 
-
+ # declaring and binding the control signal queues
 channel.exchange_declare(exchange=CONTROL_SIGNAL_EXCHANGE, exchange_type='topic')
 channel.queue_declare(queue=CONTROL__SIGNAL_OBSERV_QUEUE)
 channel.queue_declare(queue=CONTROL__SIGNAL_ORIG_QUEUE)
@@ -78,7 +71,7 @@ with open(FILE_PATH, 'w') as fp:
     pass
 
 
-
+# Callback function for receving data
 def callback(ch, method, properties, body,temp_counter):
     temp_file= open(FILE_PATH, "a",encoding='utf-8')	
     dt = datetime.now()
@@ -92,7 +85,7 @@ on_message_callback = functools.partial(callback, temp_counter=(temp_counter))
 channel.basic_consume(
     queue='#', on_message_callback=on_message_callback, auto_ack=True)
 
-
+# Callback function for receving the control signals. i.e State changes.
 def control_callback(ch, method, properties, body,temp_counter):
         logger.info("control signal received "+body.decode('utf-8'))
         if body.decode('utf-8')=="INIT":
