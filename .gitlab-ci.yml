@@ -37,6 +37,9 @@ pylint:
 test-job:
   stage: test
   image: python:latest
+  services:
+    - name: rabbitmq:3.10-management
+      alias: rabitmq
   before_script:
     - python -m venv venv
     - source venv/bin/activate

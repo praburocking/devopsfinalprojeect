@@ -14,7 +14,7 @@ services:
     networks:
       backend:
     volumes:
-      - web_data:/usr/data
+      - ./web_data:/usr/data
       - ./logs:/usr/logs
     depends_on:
       - rabitmq
@@ -30,6 +30,7 @@ services:
     tty: true
     volumes:
       - ./logs:/usr/logs
+      - ./web_data:/usr/data
     env_file:
       - .env
 
@@ -44,6 +45,7 @@ services:
       - rabitmq
     volumes:
       - ./logs:/usr/logs
+      - ./web_data:/usr/data
     env_file:
       - .env
 
@@ -53,7 +55,7 @@ services:
     networks:
       backend:
     volumes:
-      - web_data:/usr/data
+      - ./web_data:/usr/data
       - ./logs:/usr/logs
     depends_on:
       - rabitmq
@@ -66,6 +68,17 @@ services:
     container_name: rabitmq
     networks:
       backend:
+  # logs:
+  #   image: httpd
+  #   container_name: logs
+  #   volumes:
+  #     - ./logs:.
+  #   expose:
+  #     - "80"
+  #   ports:
+  #     - "8088:80"
+  #   networks:
+  #     backend:
 
 networks:
  backend:

@@ -10,6 +10,8 @@ from HTMLLogger import HTMLLogger
 from datetime import datetime
 from dotenv import load_dotenv
 import os
+import sys
+import psutil
 
 #loading environment
 load_dotenv()
@@ -24,10 +26,14 @@ logger=HTMLLogger(name="HTTP SERVER", html_filename=log_file, console_log=True)
 
 #other variables
 HOST="rabitmq"
+HOST="localhost"
 EXCHANGE='control_msg'
-CONTROL__SIGNAL_ROUTING_KEY="state_control.i"
-RUN_LOG_FILE_PATH="/usr/data/run_log_file.txt"
-FILE_PATH="/usr/data/temp_file.txt"
+CONTROL__SIGNAL_ROUTING_KEY="state_control.key"
+CONTROL__SIGNAL_ORIG_QUEUE="state_control.orig"
+CONTROL__SIGNAL_IMED_QUEUE="state_control.imed"
+CONTROL__SIGNAL_OBSERV_QUEUE="state_control.observ"
+RUN_LOG_FILE_PATH="/usr/data/run_log_file.txt" if APP_ENV=='PROD' else os.getenv('TEST_RUN_LOG_FILE_PATH')
+FILE_PATH="/usr/data/temp_file.txt" if APP_ENV=='PROD' else os.getenv('TEST_FILE_PATH')
 ALLOWED_STATES=["INIT", "PAUSED", "RUNNING", "SHUTDOWN"]
 PORT=8083
 
@@ -50,51 +56,66 @@ while True and APP_ENV=="PROD":
 		break
 
 #run the lines only in production. The lines are simulated in the TEST env for unit test
-if APP_ENV=="PROD":
-	connection = pika.BlockingConnection(pika.ConnectionParameters(HOST))
-	channel = connection.channel()
 
-	#create the quque and bind it with exchanges for sending the control signals to other containers
-	channel.exchange_declare(exchange=EXCHANGE, exchange_type='topic')
-	channel.queue_declare(queue=CONTROL__SIGNAL_ROUTING_KEY)
-	channel.queue_bind(exchange=EXCHANGE, queue=CONTROL__SIGNAL_ROUTING_KEY, routing_key=CONTROL__SIGNAL_ROUTING_KEY)
-	logger.info("creating cotrol queue and topic with name "+CONTROL__SIGNAL_ROUTING_KEY)
+connection = pika.BlockingConnection(pika.ConnectionParameters(HOST))
+channel = connection.channel()
+
+#create the quque and bind it with exchanges for sending the control signals to other containers
+channel.exchange_declare(exchange=EXCHANGE, exchange_type='topic')
+channel.queue_declare(queue=CONTROL__SIGNAL_OBSERV_QUEUE)
+channel.queue_declare(queue=CONTROL__SIGNAL_ORIG_QUEUE)
+channel.queue_declare(queue=CONTROL__SIGNAL_IMED_QUEUE)
+channel.queue_bind(exchange=EXCHANGE, queue=CONTROL__SIGNAL_OBSERV_QUEUE, routing_key=CONTROL__SIGNAL_ROUTING_KEY)
+channel.queue_bind(exchange=EXCHANGE, queue=CONTROL__SIGNAL_ORIG_QUEUE, routing_key=CONTROL__SIGNAL_ROUTING_KEY)
+channel.queue_bind(exchange=EXCHANGE, queue=CONTROL__SIGNAL_IMED_QUEUE, routing_key=CONTROL__SIGNAL_ROUTING_KEY)
+logger.info("creating cotrol queue and topic with name "+CONTROL__SIGNAL_ROUTING_KEY)
 
 	#clear the file before starting the server
 
 
 def init_service():
 	logger.info("INIT service is triggered ")
-	channel.basic_publish(exchange=EXCHANGE,
-                        routing_key=CONTROL__SIGNAL_ROUTING_KEY,
-                        body="INIT")
 	with open(RUN_LOG_FILE_PATH, 'w') as fp:
 		pass
 	with open(FILE_PATH, 'w') as fp:
 		pass
 	persist_service_change("INIT")
+	channel.basic_publish(exchange=EXCHANGE,
+                        routing_key=CONTROL__SIGNAL_ROUTING_KEY,
+                        body="INIT")
+	
 
 def pause_service():
 	logger.info("PAUSE service is triggered ")
+	persist_service_change("PAUSED")
 	channel.basic_publish(exchange=EXCHANGE,
                         routing_key=CONTROL__SIGNAL_ROUTING_KEY,
                         body="PAUSED")
-	persist_service_change("PAUSED")
 
 def run_service():
 	logger.info("RUN service is triggered ")
+	persist_service_change("RUNNING")
 	channel.basic_publish(exchange=EXCHANGE,
                         routing_key=CONTROL__SIGNAL_ROUTING_KEY,
                         body="RUNNING")
-	persist_service_change("RUNNING")
+	
+	
 
-def shutdown_service():
+async def shutdown_service():
 	logger.info("SHUTDOWN service is triggered ")
+	persist_service_change("SHUTDOWN")
 	channel.basic_publish(exchange=EXCHANGE,
                         routing_key=CONTROL__SIGNAL_ROUTING_KEY,
-                        body="PAUSE")
-	persist_service_change("SHUTDOWN")
-	exit()
+                        body="SHUTDOWN")
+	parent_pid = os.getpid()
+	parent = psutil.Process(parent_pid)
+	for child in parent.children(recursive=True):  # or parent.children() for recursive=False
+		child.kill()
+	parent.kill()
+	global server
+	server.should_exit = True
+	server.force_exit = True
+	await server.shutdown()
 
 def persist_service_change(state):
 	#update the changes in the run_log_file.txt before 
@@ -126,7 +147,8 @@ async def update_state(request: Request):
 	state=state.decode("utf-8")
 	logger.info("PUT request received for <hl>/state</hl> and the input state :"+str(state))
 	if not state in ALLOWED_STATES:
-		raise HTTPException(status_code=400, detail="Invalid state. Allowed state "+str(ALLOWED_STATES))
+		return PlainTextResponse(content="Invalid state. Allowed state "+str(ALLOWED_STATES),status_code=400)
+		#raise HTTPException(400, "Invalid state. Allowed state "+str(ALLOWED_STATES))
 
 	#check the last status and if it is same as current one don't do anything	
 	f= open(RUN_LOG_FILE_PATH, 'r')
@@ -142,8 +164,7 @@ async def update_state(request: Request):
 	elif state == "RUNNING":
 		run_service()
 	elif state == "SHUTDOWN":
-		shutdown_service()
-
+		await shutdown_service()
 	return "state updated"
 
 @app.get("/state", response_class=PlainTextResponse)
@@ -161,8 +182,10 @@ def get_run_log():
 
 
 
-
+server=None
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=PORT)
+    config = uvicorn.Config(app, host="0.0.0.0", port=PORT, log_level="info", loop="asyncio")
+    server = uvicorn.Server(config=config)
+    server.run()
 	
     
