@@ -114,7 +114,7 @@ async def shutdown_service():
 #persist the state changes. the file will be reset when INIT state is called 
 def persist_service_change(state):
 	#update the changes in the run_log_file.txt before 
-	temp_file= open(RUN_LOG_FILE_PATH, "a",encoding='utf-8')
+	temp_file= open(RUN_LOG_FILE_PATH, "a", encoding='utf-8')
 	dt = datetime.now()
 	temp_str=str(dt)+": "+state+"\n"
 	temp_file.write(temp_str)
@@ -144,7 +144,7 @@ async def update_state(request: Request):
 	state=state.decode("utf-8")
 	logger.info("PUT request received for <hl>/state</hl> and the input state :"+str(state))
 	if not state in ALLOWED_STATES:
-		return PlainTextResponse(content="Invalid state. Allowed state "+str(ALLOWED_STATES),status_code=400)
+		return PlainTextResponse(content="Invalid state. Allowed state "+str(ALLOWED_STATES), status_code=400)
 
 	#check the last status and if it is same as current one don't do anything	
 	f= open(RUN_LOG_FILE_PATH, 'r')

@@ -13,5 +13,4 @@ RUN useradd -m -s /bin/bash -G sudo -p $(openssl passwd -1 pass123) deploy
 RUN service ssh start
 
 EXPOSE 22
-COPY project app/
 ENTRYPOINT /usr/sbin/sshd -D && node server.js
