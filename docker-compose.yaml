@@ -18,6 +18,7 @@ services:
       - ./logs:/usr/logs
     depends_on:
       - rabitmq
+      - log_monitor
     
   
   imed:
@@ -25,6 +26,7 @@ services:
     container_name: imed
     depends_on:
       - rabitmq
+      - log_monitor
     networks:
       backend:
     tty: true
@@ -43,6 +45,7 @@ services:
       backend:
     depends_on:
       - rabitmq
+      - log_monitor
     volumes:
       - ./logs:/usr/logs
       - ./web_data:/usr/data
@@ -59,7 +62,23 @@ services:
       - ./logs:/usr/logs
     depends_on:
       - rabitmq
+      - log_monitor
     container_name: observ
+    env_file:
+      - .env
+
+  log_monitor:
+    build: log_monitor/.
+    tty: true   
+    networks:
+      backend:
+    expose:
+      - "9999"
+    ports:
+      - "9999:9999"
+    volumes:
+      - ./logs:/usr/logs
+    container_name: log_monitor
     env_file:
       - .env
     

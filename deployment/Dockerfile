@@ -6,7 +6,7 @@ RUN apt-get install -y sudo
 RUN apt-get install -y nodejs
 RUN apt-get install -y net-tools
 RUN apt-get -y install git
-RUN curl -L https://github.com/docker/compose/releases/download/1.28.5/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+#RUN curl -L https://github.com/docker/compose/releases/download/1.28.5/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
 RUN echo 'root:root' |chpasswd
 RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN useradd -m -s /bin/bash -G sudo -p $(openssl passwd -1 pass123) deploy
