@@ -25,7 +25,7 @@ logger=HTMLLogger(name="HTTP SERVER", html_filename=log_file, console_log=True)
 
 #other variables
 HOST="rabitmq"
-HOST="localhost"
+#HOST="localhost"
 EXCHANGE='control_msg'
 CONTROL__SIGNAL_ROUTING_KEY="state_control.key"
 CONTROL__SIGNAL_ORIG_QUEUE="state_control.orig"
