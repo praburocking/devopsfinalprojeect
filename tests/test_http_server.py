@@ -40,7 +40,7 @@ def test_read_message(mocker) :
     builtin_open = "builtins.open"
     mocker.patch(builtin_open, mocked_etc_release_data)
     response = client.get("/message")
-    assert response.status_code == 201
+    assert response.status_code == 200
     assert response.text=="\n".join(output_res)
 
 
