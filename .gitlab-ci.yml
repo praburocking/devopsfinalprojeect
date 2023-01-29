@@ -81,7 +81,7 @@ deploy_staging:
   script:
     - echo "ssh deploy started"
     # ssh into the deployment using password, set the environment variable to PROD, create a new folder clone the repository using the access token and start the docker containers. 
-    - sshpass -p root ssh root@deployment "rm -rf app && export ENV=PROD &&mkdir app && cd app && git clone http://prabu:glpat-L23Zfs9ed1cvDUsG5iQX@gitlab-ce/gitlab-instance-492260da/finalproject.git -b project && cd finalproject && docker-compose up --build -d && exit"
+    - sshpass -p root ssh root@deployment "rm -rf app && export ENV=PROD &&mkdir app && cd app && git clone http://root:glpat-zp7vnsfqGxDQf5svryYt@gitlab-ce/gitlab-instance-c2607042/devopsfinalproject.git -b project && cd finalproject && docker-compose up --build -d && exit"
     - echo "ssh deploy completed"
   only:
     - project
