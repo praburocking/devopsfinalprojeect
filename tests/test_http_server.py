@@ -35,7 +35,7 @@ def test_read_message(mocker) :
                 "2023-01-22 00:18:50.567512 3 MSG_2 to compse140.o",
                 "2023-01-22 00:18:50.567581 4 MSG_2 to compse140.i",
                 "2023-01-22 00:18:51.670902 5 MSG_3 to compse140.o",
-                "2023-01-22 00:18:51.671679 6 MSG_3 to compse140.i"]
+                "2023-01-22 00:18:51.671679 6 MSG_3 to compse140.i_"]
     mocked_etc_release_data = mocker.mock_open(read_data="\n".join(output_res))
     builtin_open = "builtins.open"
     mocker.patch(builtin_open, mocked_etc_release_data)
